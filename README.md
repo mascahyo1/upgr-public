@@ -1,87 +1,52 @@
-# UPGR — Payment Gateway Router (Midtrans)
+# UPGR — Unified Payment Gateway Router
 
-Self-hosted payment router: beberapa aplikasi berbagi satu akun Midtrans.
-Satu notification URL, lalu UPGR meneruskan notifikasi ke webhook tiap aplikasi
-berdasarkan **prefix kode transaksi** (case-sensitive), lengkap dengan log
-IP/User-Agent/header/body dan simulator webhook built-in.
+**UPGR = Unified Payment Gateway Router**: satu pintu yang menyatukan
+banyak gerbang pembayaran dan meneruskan tiap transaksi ke aplikasi yang tepat.
 
-- Portal **tenant**: kredensial gateway, webhook + prefix, log API/provider/router, simulator webhook, profil.
-- Portal **provider**: tenant, konfigurasi, kredensial.
-- Invoice stateless: GoPay QRIS dinamis (`gopay_qris_dinamis`) + halaman Snap (`snap`), cek status.
-- Notifikasi: `POST /api_external/publik/notify/midtrans/[credId]` selalu 200, verifikasi signature SHA512.
-- Simulator: `POST /api_external/publik/simulator/terima/[tenantId]` — penampung gratis per tenant (pengganti webhook.site).
-- Koleksi Hoppscotch + Postman dengan contoh respons tersimpan; E2E Playwright.
+Punya beberapa aplikasi (toko, kasir, keuangan) tapi cuma satu akun Midtrans?
 
-## Syarat
+Punya beberapa aplikasi (toko, kasir, keuangan) tapi cuma satu akun Midtrans?
+UPGR duduk di tengah: pelanggan bayar seperti biasa, lalu UPGR otomatis
+meneruskan kabar pembayaran ke aplikasi yang tepat.
 
-- Node.js 20+ dan npm
-- MySQL 8+ (database kosong, mis. `upgr`)
-- (Opsional) widget Cloudflare Turnstile untuk captcha login
-
-## Install
-
-```bash
-git clone https://github.com/<akun-kamu>/upgr-nuxt.git
-cd upgr-nuxt
-cp .env.example .env   # lalu isi kredensial MySQL + Turnstile
-npm install
+```
+Pelanggan bayar ──▶ Midtrans ──▶ UPGR ──▶ Toko / Kasir / Keuangan
 ```
 
-Isi `.env` (lihat `.env.example`):
+Cocok untuk: sekolah, koperasi, UMKM, atau siapa pun yang menerima
+pembayaran online dan ingin pencatatannya rapi per aplikasi.
 
-```ini
-MYSQL_HOST=127.0.0.1
-MYSQL_PORT=3306
-MYSQL_USER=upgr
-MYSQL_PASSWORD=isi-password-kuat
-MYSQL_DB=upgr
-TURNSTILE_SECRET_KEY=
-NUXT_PUBLIC_TURNSTILE_SITE_KEY=
-ALLOW_TEST_API=0
-```
+## Yang bisa dilakukan
 
-Skema database dibuat otomatis saat aplikasi pertama kali query (`ensureSchema`),
-jadi cukup siapkan database kosong.
+- **Terima bayar** lewat QRIS dan halaman bayar Snap (transfer bank, e-wallet, kartu).
+- **Atur tujuan otomatis**: kode transaksi berawalan `INV` diteruskan ke aplikasi A,
+  berawalan `SPP` ke aplikasi B — tanpa campur aduk.
+- **Lihat semua catatan**: siapa bayar, kapan, lewat apa, terkirim ke mana.
+- **Coba-coba gratis**: ada simulator penampung notifikasi, jadi tidak perlu
+  bayar betulan saat latihan.
 
-## Jalan lokal
+## Cara pakai (5 menit)
 
-```bash
-npm run dev    # http://localhost:3000
-```
+1. Install [Node.js](https://nodejs.org) versi 20 ke atas, dan siapkan database MySQL kosong.
+2. Unduh kode ini, lalu di foldernya jalankan:
+   ```bash
+   npm install
+   ```
+3. Salin `cp .env.example .env`, buka file `.env`, isi nama database dan password MySQL.
+4. Jalankan:
+   ```bash
+   npm run dev
+   ```
+5. Buka `http://localhost:3000` di browser. Selesai.
 
-Akun uji (hanya bila `ALLOW_TEST_API=1`, jangan di production):
+Langkah berikutnya (buat akun, sambungkan Midtrans, pasang webhook) ada di
+halaman bantuan dalam aplikasi.
 
-```bash
-curl -X POST http://localhost:3000/api_web/_test/seed-user
-```
+## Butuh bantuan teknis?
 
-- Tenant: `tenant@example.com` / `sandi-tenant-123`
-- E2E: `uji@example.com` / `sandi-uji-123`
-
-## Production
-
-```bash
-npm run build
-node .output/server/index.mjs   # atau via pm2
-```
-
-Contoh dengan pm2:
-
-```bash
-pm2 start .output/server/index.mjs --name upgr
-pm2 save
-```
-
-## Uji
-
-```bash
-npx vue-tsc --noEmit
-E2E_PORT=3000 node tests/e2e/simulator.e2e.cjs
-E2E_PORT=3000 node tests/e2e/notify.e2e.cjs
-E2E_PORT=3000 node tests/e2e/tagihan.e2e.cjs
-E2E_PORT=3000 node tests/e2e/logdetail.e2e.cjs   # butuh Chromium Playwright
-```
+File [PRODUCTION-READY.md](PRODUCTION-READY.md) berisi bukti uji lengkap.
+Pengembang: lihat panduan kontribusi di [docs/PENGEMBANG.md](docs/PENGEMBANG.md).
 
 ## Lisensi
 
-MIT — lihat [LICENSE](LICENSE).
+MIT — bebas dipakai dan diubah, lihat [LICENSE](LICENSE).
