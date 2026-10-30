@@ -74,6 +74,19 @@ menerima kabar seperti biasa dari UPGR.
 Langkah berikutnya (buat akun, sambungkan Midtrans, pasang webhook) ada di
 halaman bantuan dalam aplikasi.
 
+## Catatan legal (penting)
+
+- **Server Key Midtrans wajib rahasia dan hanya dipakai dari server.**
+  UPGR sudah begitu: key tidak pernah dikirim ke browser dan disensor di semua log.
+  ([sumber: dokumen resmi Midtrans](https://docs.midtrans.com/docs/midtrans-account))
+- **Satu akun Midtrans = satu badan usaha.** UPGR cocok untuk banyak aplikasi
+  milik entitas yang sama (mis. semua aplikasi satu sekolah). Kalau tiap
+  aplikasi milik badan hukum berbeda, konsultasikan dulu ke penasihat hukummu —
+  pencairan dana dan pajak tiap entitas bisa jadi masalah.
+- Kalau ragu, tanyakan tertulis ke support Midtrans bahwa satu akun dipakai
+  untuk beberapa aplikasi internal, dan simpan jawabannya.
+- Ini bukan nasihat hukum.
+
 ## Butuh bantuan teknis?
 
 File [PRODUCTION-READY.md](PRODUCTION-READY.md) berisi bukti uji lengkap.
