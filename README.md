@@ -40,6 +40,9 @@ terpisah rapi per aplikasi.
    tidak pakai uang asli).
 5. **Alamat internet (domain)** — hanya untuk produksi, mis. agar Midtrans
    bisa mengabari UPGR. Untuk latihan di laptop sendiri tidak perlu.
+   Alternatif gratis: Cloudflare Tunnel (tidak perlu beli domain atau
+   membuka port) — cukup arahkan tunnel ke `http://localhost:3000`,
+   lalu pakai alamat tunnel itu sebagai notification URL di Midtrans.
 
 Yang **tidak** perlu: aplikasi lain tidak perlu diubah — mereka hanya
 menerima kabar seperti biasa dari UPGR.
