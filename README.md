@@ -38,11 +38,12 @@ terpisah rapi per aplikasi.
 4. **Akun Midtrans** — daftar gratis di midtrans.com; yang dipakai cukup
    *Server Key* dari dashboard (ada versi sandbox untuk latihan,
    tidak pakai uang asli).
-5. **Alamat internet (domain)** — hanya untuk produksi, mis. agar Midtrans
-   bisa mengabari UPGR. Untuk latihan di laptop sendiri tidak perlu.
-   Alternatif gratis: Cloudflare Tunnel (tidak perlu beli domain atau
-   membuka port) — cukup arahkan tunnel ke `http://localhost:3000`,
-   lalu pakai alamat tunnel itu sebagai notification URL di Midtrans.
+5. **Alamat internet** — hanya untuk produksi, agar Midtrans bisa
+   mengabari UPGR. Untuk latihan di laptop sendiri tidak perlu. Dua pilihan:
+   - **Domain sendiri** (mis. `upgr.example.com`) — untuk pemakaian serius.
+   - **Cloudflare Tunnel / ngrok** (gratis, tanpa beli domain) — cukup
+     arahkan ke `http://localhost:3000`, lalu pakai alamat tunnel itu
+     sebagai notification URL di Midtrans.
 
 Yang **tidak** perlu: aplikasi lain tidak perlu diubah — mereka hanya
 menerima kabar seperti biasa dari UPGR.
