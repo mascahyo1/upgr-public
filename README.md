@@ -18,9 +18,31 @@ terkirim ke mana.
 Murid bayar ──▶ Midtrans ──▶ UPGR ──▶ Keuangan (SPP-...) / Kantin (Kantin-...) / Koperasi (Kop-...)
 ```
 
+Kenapa tidak langsung Midtrans ke aplikasi? Karena Midtrans hanya punya
+**satu alamat kabar** (satu notification URL) per rekening. Tanpa UPGR,
+semua kabar lunas menumpuk di satu tempat dan tiap aplikasi harus
+berebut memilah sendiri. UPGR yang memilahkan — tiap aplikasi cukup
+menunggu kabar yang memang untuknya.
+
 Cocok untuk: sekolah, koperasi, UMKM, atau siapa pun yang menerima
 pembayaran online dari banyak keperluan tapi ingin pencatatannya
 terpisah rapi per aplikasi.
+
+## Syarat (apa saja yang perlu disiapkan)
+
+1. **Komputer server** — laptop/PC biasa cukup untuk coba-coba; untuk
+   dipakai betulan, sewa VPS kecil (RAM 2 GB cukup).
+2. **Node.js versi 20 ke atas** — mesin yang menjalankan UPGR.
+3. **Database MySQL** — lemari arsip tempat UPGR menyimpan catatan
+   (tabel dibuat otomatis, tidak perlu dirancang manual).
+4. **Akun Midtrans** — daftar gratis di midtrans.com; yang dipakai cukup
+   *Server Key* dari dashboard (ada versi sandbox untuk latihan,
+   tidak pakai uang asli).
+5. **Alamat internet (domain)** — hanya untuk produksi, mis. agar Midtrans
+   bisa mengabari UPGR. Untuk latihan di laptop sendiri tidak perlu.
+
+Yang **tidak** perlu: aplikasi lain tidak perlu diubah — mereka hanya
+menerima kabar seperti biasa dari UPGR.
 
 ## Yang bisa dilakukan
 
