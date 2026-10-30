@@ -1,0 +1,740 @@
+{
+  "info": {
+    "name": "UPGR API",
+    "description": "Koleksi API UPGR (Nuxt fullstack, MySQL). Variabel baseUrl menunjuk server target; koleksi ini dipakai lokal/dev/prod. Alur umum: 0 Uji (reset+seed, dev/lokal saja) > 1 Auth (login tenant/provider, wajib captcha Turnstile; dev memakai captcha dummy) > 2 Kredensial + 3 Webhook + 4 Log > 5 Tenant (API keys, profil) > 6 Provider (tenants, konfigurasi). Password/secret asli TIDAK disimpan di koleksi ini.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3200"
+    },
+    {
+      "key": "credId",
+      "value": "c-seed-sandbox"
+    },
+    {
+      "key": "webhookId",
+      "value": ""
+    },
+    {
+      "key": "apiKeyId",
+      "value": ""
+    },
+    {
+      "key": "tenantId",
+      "value": "t-seed-contoh"
+    },
+    {
+      "key": "konfigId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Uji (dev/lokal saja, butuh ALLOW_TEST_API=1)",
+      "item": [
+        {
+          "name": "Reset + seed kredensial",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/_test/reset",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "Seed user uji",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/_test/seed-user",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "Ping uji-kirim",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/_test/ping",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Auth (throttle 10x/menit per IP, 429 + Retry-After)",
+      "item": [
+        {
+          "name": "Login tenant",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"area\": \"tenant\",\n  \"email\": \"uji@example.com\",\n  \"password\": \"sandi-uji-123\",\n  \"captcha\": \"dummy\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login provider",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"area\": \"provider\",\n  \"email\": \"provider@contoh.id\",\n  \"password\": \"ganti-dengan-asli\",\n  \"captcha\": \"dummy\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Profil saya (butuh cookie sesi)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/auth/me"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/auth/logout",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Kredensial payment gateway",
+      "item": [
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/credentials"
+          }
+        },
+        {
+          "name": "Tambah",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/credentials",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Midtrans Sandbox\",\n  \"provider\": \"midtrans\",\n  \"is_production\": false,\n  \"merchant_id\": \"M-001\",\n  \"key\": \"SB-Mid-client-001\",\n  \"secret\": \"SB-Mid-secret-001\",\n  \"webhook_verify_token\": \"tok-sb-001\",\n  \"deskripsi\": \"Akun sandbox pengembang\",\n  \"status\": \"aktif\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}"
+          }
+        },
+        {
+          "name": "Ubah",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Midtrans Sandbox 2\",\n  \"provider\": \"midtrans\",\n  \"is_production\": false,\n  \"merchant_id\": \"M-001\",\n  \"key\": \"SB-Mid-client-001\",\n  \"secret\": \"SB-Mid-secret-001\",\n  \"webhook_verify_token\": \"tok-sb-001\",\n  \"deskripsi\": \"Diubah\",\n  \"status\": \"aktif\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Test kredensial ke gateway (midtrans/xendit, tanpa buat transaksi)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/test",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "Hapus",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}"
+          }
+        },
+        {
+          "name": "Bulk hapus",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/credentials/bulk-delete",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{credId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Bulk impor",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/credentials/bulk-import",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"nama\": \"Xendit Test\",\n      \"provider\": \"xendit\",\n      \"is_production\": false,\n      \"merchant_id\": \"X-1\",\n      \"key\": \"xnd-key-1\",\n      \"secret\": \"xnd-secret-1\",\n      \"deskripsi\": \"Dari impor\",\n      \"status\": \"aktif\"\n    }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Webhook per kredensial",
+      "item": [
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/webhooks"
+          }
+        },
+        {
+          "name": "Tambah",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/webhooks",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"ERP Utama\",\n  \"url\": \"https://erp.contoh.id/w/midtrans\",\n  \"prefix\": \"INV\",\n  \"is_active\": true,\n  \"verify_token\": \"tok-erp-1\",\n  \"deskripsi\": \"Penerus ERP\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/webhooks/{{webhookId}}"
+          }
+        },
+        {
+          "name": "Ubah",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/webhooks/{{webhookId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"ERP Utama 2\",\n  \"url\": \"https://erp.contoh.id/w/midtrans\",\n  \"prefix\": \"INV\",\n  \"is_active\": true,\n  \"verify_token\": \"tok-erp-1\",\n  \"deskripsi\": \"Diubah\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Uji kirim (POST ke URL webhook + catat log)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/webhooks/{{webhookId}}/test",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "Hapus",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/webhooks/{{webhookId}}"
+          }
+        },
+        {
+          "name": "Bulk hapus",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/webhooks/bulk-delete",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{webhookId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Bulk impor",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/webhooks/bulk-import",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"nama\": \"BIS Staging\",\n      \"url\": \"https://bis.contoh.id/w\",\n      \"prefix\": \"BIS\",\n      \"deskripsi\": \"Dari impor\"\n    }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Log webhook (maks 200/kredensial, tertua dibuang)",
+      "item": [
+        {
+          "name": "List (filter: hasil, http, q, dari, sampai)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/logs?hasil=gagal"
+          }
+        },
+        {
+          "name": "Uji kirim (catat manual)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/credentials/{{credId}}/logs",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"webhook_id\": \"{{webhookId}}\",\n  \"event\": \"Uji kirim\",\n  \"hasil\": \"terkirim\",\n  \"http\": 200,\n  \"pesan\": \"OK\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Tenant (API keys + profil, tenant_id default t-seed-contoh)",
+      "item": [
+        {
+          "name": "API keys list",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/tenant/api-keys"
+          }
+        },
+        {
+          "name": "API key tambah",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/tenant/api-keys",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ERP Production\",\n  \"tenant_id\": \"t-seed-contoh\",\n  \"status\": \"aktif\",\n  \"key\": \"upgrk_erp_prod_001\",\n  \"secret\": \"upgrs_erp_prod_001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API key detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/tenant/api-keys/{{apiKeyId}}"
+          }
+        },
+        {
+          "name": "API key ubah",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api_web/tenant/api-keys/{{apiKeyId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ERP Production 2\",\n  \"status\": \"aktif\",\n  \"key\": \"upgrk_erp_prod_001\",\n  \"secret\": \"upgrs_erp_prod_001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API key hapus",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api_web/tenant/api-keys/{{apiKeyId}}"
+          }
+        },
+        {
+          "name": "API keys bulk hapus",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/tenant/api-keys/bulk-delete",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{apiKeyId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "API keys bulk impor",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/tenant/api-keys/bulk-import",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"name\": \"BIS Staging\",\n      \"tenant_id\": \"t-seed-contoh\",\n      \"status\": \"aktif\",\n      \"key\": \"upgrk_baru_001\",\n      \"secret\": \"upgrs_baru_001\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Profil lihat",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/tenant/profil"
+          }
+        },
+        {
+          "name": "Profil simpan",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api_web/tenant/profil",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"PT Uji Coba\",\n  \"email\": \"uji@contoh.id\",\n  \"deskripsi\": \"Profil contoh\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Provider (tenants + konfigurasi)",
+      "item": [
+        {
+          "name": "Tenants list",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/provider/tenants"
+          }
+        },
+        {
+          "name": "Tenant tambah",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/provider/tenants",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Kopsis Mawar\",\n  \"email\": \"kopsis@contoh.id\",\n  \"password\": \"minimal8karakter\",\n  \"deskripsi\": \"Koperasi sekolah\",\n  \"status\": \"aktif\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Tenant detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/provider/tenants/{{tenantId}}"
+          }
+        },
+        {
+          "name": "Tenant ubah (password opsional)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api_web/provider/tenants/{{tenantId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Kopsis Mawar 2\",\n  \"email\": \"kopsis@contoh.id\",\n  \"deskripsi\": \"Diubah\",\n  \"status\": \"aktif\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Tenant hapus",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api_web/provider/tenants/{{tenantId}}"
+          }
+        },
+        {
+          "name": "Tenants bulk status",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/provider/tenants/bulk-status",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{tenantId}}\"\n  ],\n  \"status\": \"nonaktif\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Tenants bulk hapus",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/provider/tenants/bulk-delete",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{tenantId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Tenants bulk impor",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/provider/tenants/bulk-import",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"nama\": \"Impor Baru\",\n      \"email\": \"baru@contoh.id\",\n      \"password\": \"minimal8karakter\",\n      \"deskripsi\": \"Dari impor\",\n      \"status\": \"aktif\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Konfigurasi list",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/provider/konfigurasi"
+          }
+        },
+        {
+          "name": "Konfigurasi tambah teks",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/provider/konfigurasi",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kode\": \"webhook-erp\",\n  \"nama\": \"Webhook ERP RT/RW Net\",\n  \"type\": \"text\",\n  \"value\": \"https://erp.contoh.id/w/midtrans\",\n  \"deskripsi\": \"Penerus webhook\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Konfigurasi tambah rahasia (disensor di UI)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/provider/konfigurasi",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kode\": \"midtrans-server-key\",\n  \"nama\": \"Midtrans Server Key\",\n  \"type\": \"kredensial\",\n  \"value\": \"SB-Mid-xxx\",\n  \"deskripsi\": \"Kunci server gateway\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Konfigurasi detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api_web/provider/konfigurasi/{{konfigId}}"
+          }
+        },
+        {
+          "name": "Konfigurasi ubah",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api_web/provider/konfigurasi/{{konfigId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kode\": \"webhook-erp\",\n  \"nama\": \"Webhook ERP 2\",\n  \"type\": \"text\",\n  \"value\": \"https://erp.contoh.id/w/midtrans\",\n  \"deskripsi\": \"Diubah\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Konfigurasi hapus",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api_web/provider/konfigurasi/{{konfigId}}"
+          }
+        },
+        {
+          "name": "Konfigurasi bulk hapus",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/provider/konfigurasi/bulk-delete",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{konfigId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Konfigurasi bulk impor",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api_web/provider/konfigurasi/bulk-import",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"kode\": \"retry-maksimal\",\n      \"nama\": \"Retry Maksimal\",\n      \"type\": \"number\",\n      \"value\": \"3\",\n      \"deskripsi\": \"Percobaan ulang\"\n    }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

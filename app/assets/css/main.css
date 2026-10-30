@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sumber: C:\Users\masca\upgr\server.js layoutAdmin <style> — 100% */
+.admin-collapsed .menu-label {
+  display: none;
+}
