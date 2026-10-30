@@ -1,20 +1,26 @@
 # UPGR — Unified Payment Gateway Router
 
-**UPGR = Unified Payment Gateway Router**: satu pintu yang menyatukan
-banyak gerbang pembayaran dan meneruskan tiap transaksi ke aplikasi yang tepat.
+**UPGR = Unified Payment Gateway Router** — "tukang pos" pembayaran online.
 
-Punya beberapa aplikasi (toko, kasir, keuangan) tapi cuma satu akun Midtrans?
+Bayangkan sebuah sekolah punya 3 urusan bayar-membayar: SPP, kantin, dan
+koperasi. Semuanya menerima transfer/QRIS lewat **satu rekening Midtrans
+yang sama**. Masalahnya: saat ada uang masuk, sekolah tidak tahu itu
+bayaran untuk urusan yang mana.
 
-Punya beberapa aplikasi (toko, kasir, keuangan) tapi cuma satu akun Midtrans?
-UPGR duduk di tengah: pelanggan bayar seperti biasa, lalu UPGR otomatis
-meneruskan kabar pembayaran ke aplikasi yang tepat.
+UPGR menyelesaikan itu. Setiap tagihan diberi kode berawalan beda
+(mis. `SPP-...`, `Kantin-...`, `Kop-...`). Begitu Midtrans mengabari
+"ada pembayaran lunas", UPGR membaca kode itu lalu **meneruskan kabar ke
+aplikasi yang tepat** — kabar `SPP-...` ke aplikasi keuangan sekolah,
+`Kantin-...` ke aplikasi kasir kantin. Semua tercatat: siapa bayar, kapan,
+terkirim ke mana.
 
 ```
-Pelanggan bayar ──▶ Midtrans ──▶ UPGR ──▶ Toko / Kasir / Keuangan
+Murid bayar ──▶ Midtrans ──▶ UPGR ──▶ Keuangan (SPP-...) / Kantin (Kantin-...) / Koperasi (Kop-...)
 ```
 
 Cocok untuk: sekolah, koperasi, UMKM, atau siapa pun yang menerima
-pembayaran online dan ingin pencatatannya rapi per aplikasi.
+pembayaran online dari banyak keperluan tapi ingin pencatatannya
+terpisah rapi per aplikasi.
 
 ## Yang bisa dilakukan
 
